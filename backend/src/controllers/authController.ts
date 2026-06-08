@@ -8,7 +8,7 @@ function signToken(userId: number, username: string): string {
   return jwt.sign(
     { userId, username },
     process.env.JWT_SECRET as string,
-    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+    { expiresIn: '7d' }
   )
 }
 
