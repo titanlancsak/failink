@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: 'Playfair Display', serif;
+  --font-body: 'Source Serif 4', serif;
+  --color-ink: #0D0D0D;
+  --color-ink-soft: #1A1A1A;
+  --color-ink-muted: #2C2C2C;
+  --color-paper: #F5F0E8;
+  --color-paper-warm: #EDE8DC;
+  --color-paper-off: #FAF7F2;
+  --color-accent: #C8502A;
+  --color-accent-light: #E06A42;
+  --color-steel-200: #D8D3CC;
+  --color-steel-400: #8A8480;
+  --color-steel-600: #3C3835;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-paper);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-paper-warm);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-steel-300, #B8B2AA);
+  border-radius: 0;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-ink text-paper px-6 py-3 text-sm tracking-widest uppercase font-display
+           hover:bg-accent transition-all duration-200 
+           focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-paper
+           disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply border border-ink text-ink px-6 py-3 text-sm tracking-widest uppercase font-display
+           hover:bg-ink hover:text-paper transition-all duration-200
+           focus:outline-none focus:ring-2 focus:ring-ink focus:ring-offset-2 focus:ring-offset-paper
+           disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply text-steel-500 px-4 py-2 text-sm hover:text-ink hover:bg-paper-warm transition-all duration-150
+           focus:outline-none rounded-none;
+  }
+
+  .input-field {
+    @apply w-full bg-paper-off border border-steel-200 px-4 py-3 text-ink text-sm
+           font-body placeholder-steel-400
+           focus:outline-none focus:border-ink focus:ring-0
+           transition-colors duration-200;
+  }
+
+  .card {
+    @apply bg-paper-off border border-steel-200;
+  }
+
+  .divider {
+    @apply border-t border-steel-200;
+  }
+
+  .tag {
+    @apply text-xs tracking-widest uppercase text-steel-400 font-display;
+  }
+}
+
+@layer utilities {
+  .animate-delay-100 { animation-delay: 100ms; }
+  .animate-delay-200 { animation-delay: 200ms; }
+  .animate-delay-300 { animation-delay: 300ms; }
+  .animate-delay-400 { animation-delay: 400ms; }
+  .animate-delay-500 { animation-delay: 500ms; }
+}

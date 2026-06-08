@@ -1,0 +1,58 @@
+(((Ver todos os usuários:)))
+SELECT id, username, email, bio, created_at 
+FROM users
+ORDER BY created_at DESC;
+
+
+(((Ver todos os posts:)))
+SELECT p.id, u.username, p.content, p.created_at
+FROM posts p
+JOIN users u ON u.id = p.user_id
+ORDER BY p.created_at DESC;
+
+
+(((Ver todos os comentários:)))
+SELECT c.id, u.username, p.content AS post, c.content AS comment, c.created_at
+FROM comments c
+JOIN users u ON u.id = c.user_id
+JOIN posts p ON p.id = c.post_id
+ORDER BY c.created_at DESC;
+
+
+(((Ver todos os likes:)))
+SELECT l.id, u.username, p.content AS post, l.created_at
+FROM likes l
+JOIN users u ON u.id = l.user_id
+JOIN posts p ON p.id = l.post_id
+ORDER BY l.created_at DESC;
+
+
+
+(((Ver todas as amizades:)))
+SELECT 
+  fr.id,
+  u1.username AS sender,
+  u2.username AS receiver,
+  fr.status,
+  fr.created_at
+FROM friend_requests fr
+JOIN users u1 ON u1.id = fr.sender_id
+JOIN users u2 ON u2.id = fr.receiver_id
+ORDER BY fr.created_at DESC;
+
+
+
+
+((((Ver tudo de um usuário específico:)))
+SELECT 
+  u.username,
+  u.email,
+  COUNT(DISTINCT p.id) AS total_posts,
+  COUNT(DISTINCT l.id) AS total_likes,
+  COUNT(DISTINCT c.id) AS total_comments
+FROM users u
+LEFT JOIN posts p ON p.user_id = u.id
+LEFT JOIN likes l ON l.user_id = u.id
+LEFT JOIN comments c ON c.user_id = u.id
+WHERE u.username = 'seu_usuario_aqui'
+GROUP BY u.id;
