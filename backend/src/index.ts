@@ -18,6 +18,22 @@ const PORT = process.env.PORT || 4000
 
 // ── Security ──────────────────────────────────────────────
 app.use(helmet())
+// General limiter — all routes
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  message: { message: 'Too many requests, please try again later.' }
+})
+
+// Strict limiter — auth routes only
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  message: { message: 'Too many login attempts, please try again in 15 minutes.' }
+})
+
+app.use('/api', generalLimiter)
+app.use('/api/auth', authLimiter)
 app.use(
   cors({
     origin: process.env.CLIENT_URL || 'http://localhost:3000',
