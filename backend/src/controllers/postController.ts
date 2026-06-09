@@ -86,6 +86,26 @@ export async function deletePost(req: Request, res: Response) {
   }
 }
 
+// PUT /api/posts/:id
+export async function updatePost(req: Request, res: Response) {
+  const userId = req.user!.userId
+  const postId = parseInt(req.params.id)
+  const { content } = req.body
+  try {
+    const { rows, rowCount } = await pool.query(
+      `UPDATE posts SET content = $1, updated_at = NOW()
+       WHERE id = $2 AND user_id = $3
+       RETURNING *`,
+      [content, postId, userId]
+    )
+    if (!rowCount) return res.status(404).json({ message: 'Post not found.' })
+    return res.json(rows[0])
+  } catch (err) {
+    console.error('updatePost error:', err)
+    return res.status(500).json({ message: 'Server error.' })
+  }
+}
+
 // POST /api/posts/:id/like
 export async function likePost(req: Request, res: Response) {
   const userId = req.user!.userId

@@ -3,6 +3,7 @@ import { body } from 'express-validator'
 import {
   getFeed,
   createPost,
+  updatePost,
   deletePost,
   likePost,
   unlikePost,
@@ -30,6 +31,17 @@ router.post(
   createPost
 )
 
+router.put(
+  '/:id',
+  [
+    body('content')
+      .trim()
+      .isLength({ min: 1, max: 500 })
+      .withMessage('Post must be 1–500 characters.'),
+  ],
+  validate,
+  updatePost
+)
 router.delete('/:id', deletePost)
 
 router.post('/:id/like', likePost)

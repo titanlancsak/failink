@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
-import { Heart, MessageCircle, UserPlus, MoreHorizontal } from 'lucide-react'
+import { Heart, MessageCircle, UserPlus, Trash2, Edit2, Check, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { Post } from '@/types'
 import Avatar from '@/components/ui/Avatar'
@@ -13,13 +13,19 @@ interface PostCardProps {
   post: Post
   currentUserId?: number
   onFriendRequest?: (userId: number) => void
+  onDelete?: (postId: number) => void
+  onUpdate?: (post: Post) => void
 }
 
-export default function PostCard({ post, currentUserId, onFriendRequest }: PostCardProps) {
+export default function PostCard({ post, currentUserId, onFriendRequest, onDelete, onUpdate }: PostCardProps) {
   const [liked, setLiked] = useState(post.user_liked)
   const [likesCount, setLikesCount] = useState(post.likes_count)
   const [showComments, setShowComments] = useState(false)
   const [likeLoading, setLikeLoading] = useState(false)
+  const [editing, setEditing] = useState(false)
+  const [editContent, setEditContent] = useState(post.content)
+  const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   const isOwn = currentUserId === post.author.id
 
@@ -54,6 +60,35 @@ export default function PostCard({ post, currentUserId, onFriendRequest }: PostC
     }
   }
 
+  const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete this post?')) return
+    setDeleting(true)
+    try {
+      await api.delete(`/posts/${post.id}`)
+      toast.success('Post deleted.')
+      onDelete?.(post.id)
+    } catch {
+      toast.error('Could not delete post.')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  const handleUpdate = async () => {
+    if (!editContent.trim()) return
+    setSaving(true)
+    try {
+      await api.put(`/posts/${post.id}`, { content: editContent.trim() })
+      toast.success('Post updated.')
+      setEditing(false)
+      onUpdate?.({ ...post, content: editContent.trim() })
+    } catch {
+      toast.error('Could not update post.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   return (
     <article className="card animate-fade-up opacity-0 [animation-fill-mode:forwards]">
       {/* Header */}
@@ -69,24 +104,78 @@ export default function PostCard({ post, currentUserId, onFriendRequest }: PostC
             </Link>
             <p className="text-xs text-steel-400 mt-0.5">
               {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+              {post.updated_at !== post.created_at && (
+                <span className="ml-1 italic">(edited)</span>
+              )}
             </p>
           </div>
         </div>
 
-        {!isOwn && (
-          <button
-            onClick={handleFriendRequest}
-            className="p-1.5 text-steel-400 hover:text-accent transition-colors"
-            title={`Add ${post.author.username} as friend`}
-          >
-            <UserPlus size={15} />
-          </button>
-        )}
+        {/* Actions */}
+        <div className="flex items-center gap-1">
+          {isOwn ? (
+            <>
+              <button
+                onClick={() => setEditing(true)}
+                className="p-1.5 text-steel-400 hover:text-ink transition-colors"
+                title="Edit post"
+              >
+                <Edit2 size={14} />
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="p-1.5 text-steel-400 hover:text-accent transition-colors"
+                title="Delete post"
+              >
+                <Trash2 size={14} />
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={handleFriendRequest}
+              className="p-1.5 text-steel-400 hover:text-accent transition-colors"
+              title={`Add ${post.author.username} as friend`}
+            >
+              <UserPlus size={15} />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Content */}
       <div className="px-5 pb-5">
-        <p className="text-ink text-base leading-relaxed whitespace-pre-wrap">{post.content}</p>
+        {editing ? (
+          <div className="flex flex-col gap-2">
+            <textarea
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value.slice(0, 500))}
+              rows={3}
+              className="input-field resize-none text-sm"
+              autoFocus
+            />
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-steel-400 tag">{500 - editContent.length} left</span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { setEditing(false); setEditContent(post.content) }}
+                  className="p-1.5 text-steel-400 hover:text-accent transition-colors"
+                >
+                  <X size={14} />
+                </button>
+                <button
+                  onClick={handleUpdate}
+                  disabled={saving || !editContent.trim()}
+                  className="p-1.5 text-steel-400 hover:text-ink transition-colors"
+                >
+                  <Check size={14} />
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p className="text-ink text-base leading-relaxed whitespace-pre-wrap">{post.content}</p>
+        )}
       </div>
 
       {/* Divider */}
