@@ -15,6 +15,7 @@ export interface Post {
   comments_count: number
   user_liked: boolean
   created_at: string
+  updated_at: string
 }
 
 export interface Comment {

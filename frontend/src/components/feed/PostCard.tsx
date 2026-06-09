@@ -117,16 +117,18 @@ export default function PostCard({ post, currentUserId, onFriendRequest, onDelet
             <>
               <button
                 onClick={() => setEditing(true)}
-                className="p-1.5 text-steel-400 hover:text-ink transition-colors"
+                aria-label="Edit post"
                 title="Edit post"
+                className="p-1.5 text-steel-400 hover:text-ink transition-colors"
               >
                 <Edit2 size={14} />
               </button>
               <button
                 onClick={handleDelete}
                 disabled={deleting}
-                className="p-1.5 text-steel-400 hover:text-accent transition-colors"
+                aria-label="Delete post"
                 title="Delete post"
+                className="p-1.5 text-steel-400 hover:text-accent transition-colors"
               >
                 <Trash2 size={14} />
               </button>
@@ -134,8 +136,9 @@ export default function PostCard({ post, currentUserId, onFriendRequest, onDelet
           ) : (
             <button
               onClick={handleFriendRequest}
-              className="p-1.5 text-steel-400 hover:text-accent transition-colors"
+              aria-label={`Add ${post.author.username} as friend`}
               title={`Add ${post.author.username} as friend`}
+              className="p-1.5 text-steel-400 hover:text-accent transition-colors"
             >
               <UserPlus size={15} />
             </button>
@@ -151,6 +154,8 @@ export default function PostCard({ post, currentUserId, onFriendRequest, onDelet
               value={editContent}
               onChange={(e) => setEditContent(e.target.value.slice(0, 500))}
               rows={3}
+              aria-label="Edit post content"
+              placeholder="What's on your mind?"
               className="input-field resize-none text-sm"
               autoFocus
             />
@@ -159,6 +164,8 @@ export default function PostCard({ post, currentUserId, onFriendRequest, onDelet
               <div className="flex gap-2">
                 <button
                   onClick={() => { setEditing(false); setEditContent(post.content) }}
+                  aria-label="Cancel editing"
+                  title="Cancel"
                   className="p-1.5 text-steel-400 hover:text-accent transition-colors"
                 >
                   <X size={14} />
@@ -166,6 +173,8 @@ export default function PostCard({ post, currentUserId, onFriendRequest, onDelet
                 <button
                   onClick={handleUpdate}
                   disabled={saving || !editContent.trim()}
+                  aria-label="Save changes"
+                  title="Save"
                   className="p-1.5 text-steel-400 hover:text-ink transition-colors"
                 >
                   <Check size={14} />
@@ -185,6 +194,8 @@ export default function PostCard({ post, currentUserId, onFriendRequest, onDelet
       <div className="px-5 py-3 flex items-center gap-6">
         <button
           onClick={handleLike}
+          aria-label={liked ? 'Unlike post' : 'Like post'}
+          title={liked ? 'Unlike' : 'Like'}
           className={`flex items-center gap-2 text-xs transition-all duration-150 group ${
             liked ? 'text-accent' : 'text-steel-400 hover:text-accent'
           }`}
@@ -198,6 +209,8 @@ export default function PostCard({ post, currentUserId, onFriendRequest, onDelet
 
         <button
           onClick={() => setShowComments(!showComments)}
+          aria-label={showComments ? 'Hide comments' : 'Show comments'}
+          title={showComments ? 'Hide comments' : 'Show comments'}
           className="flex items-center gap-2 text-xs text-steel-400 hover:text-ink transition-colors group"
         >
           <MessageCircle size={15} className="group-hover:scale-110 transition-transform duration-150" />
