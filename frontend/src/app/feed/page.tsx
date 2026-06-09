@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, RefreshCw } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -10,13 +10,19 @@ import PostComposer from '@/components/feed/PostComposer'
 import Navbar from '@/components/layout/Navbar'
 import api from '@/lib/api'
 
+const LIMIT = 10
+
 export default function FeedPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
+  const [offset, setOffset] = useState(0)
   const [requestedIds, setRequestedIds] = useState<Set<number>>(new Set())
+  const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -24,26 +30,60 @@ export default function FeedPage() {
     }
   }, [user, authLoading])
 
-  const fetchPosts = useCallback(async (silent = false) => {
-    if (!silent) setLoading(true)
-    else setRefreshing(true)
+  const fetchPosts = useCallback(async (reset = false) => {
+    if (reset) {
+      setLoading(true)
+      setOffset(0)
+      setHasMore(true)
+    }
     try {
-      const { data } = await api.get('/posts')
-      setPosts(data)
+      const currentOffset = reset ? 0 : offset
+      const { data } = await api.get(`/posts?limit=${LIMIT}&offset=${currentOffset}`)
+      if (reset) {
+        setPosts(data)
+      } else {
+        setPosts((prev) => [...prev, ...data])
+      }
+      setOffset(currentOffset + data.length)
+      setHasMore(data.length === LIMIT)
     } catch {
       toast.error('Could not load posts.')
     } finally {
       setLoading(false)
       setRefreshing(false)
+      setLoadingMore(false)
     }
-  }, [])
+  }, [offset])
 
+  // Initial load
   useEffect(() => {
-    if (user) fetchPosts()
-  }, [fetchPosts, user])
+    if (user) fetchPosts(true)
+  }, [user])
+
+  // Infinite scroll observer
+  useEffect(() => {
+    if (!bottomRef.current) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore && !loading) {
+          setLoadingMore(true)
+          fetchPosts(false)
+        }
+      },
+      { threshold: 0.1 }
+    )
+    observer.observe(bottomRef.current)
+    return () => observer.disconnect()
+  }, [hasMore, loadingMore, loading, fetchPosts])
+
+  const handleRefresh = async () => {
+    setRefreshing(true)
+    await fetchPosts(true)
+  }
 
   const handleNewPost = (post: Post) => {
     setPosts((prev) => [post, ...prev])
+    setOffset((prev) => prev + 1)
   }
 
   const handleFriendRequest = (userId: number) => {
@@ -52,6 +92,7 @@ export default function FeedPage() {
 
   const handleDeletePost = (postId: number) => {
     setPosts((prev) => prev.filter((p) => p.id !== postId))
+    setOffset((prev) => prev - 1)
   }
 
   const handleUpdatePost = (updatedPost: Post) => {
@@ -78,8 +119,9 @@ export default function FeedPage() {
               <h1 className="font-display text-3xl text-ink">Your Feed</h1>
             </div>
             <button
-              onClick={() => fetchPosts(true)}
+              onClick={handleRefresh}
               disabled={refreshing}
+              aria-label="Refresh feed"
               className="btn-ghost flex items-center gap-2 text-xs"
             >
               <RefreshCw size={13} className={refreshing ? 'animate-spin' : ''} />
@@ -114,10 +156,7 @@ export default function FeedPage() {
           ) : (
             <div className="space-y-4">
               {posts.map((post, i) => (
-                <div
-                  key={post.id}
-                  style={{ animationDelay: `${i * 60}ms` }}
-                >
+                <div key={post.id} style={{ animationDelay: `${i * 60}ms` }}>
                   <PostCard
                     post={post}
                     currentUserId={user?.id}
@@ -127,6 +166,16 @@ export default function FeedPage() {
                   />
                 </div>
               ))}
+
+              {/* Infinite scroll trigger */}
+              <div ref={bottomRef} className="py-4 flex justify-center">
+                {loadingMore && (
+                  <Loader2 size={20} className="animate-spin text-steel-400" />
+                )}
+                {!hasMore && posts.length > 0 && (
+                  <p className="tag text-steel-400">You have reached the end</p>
+                )}
+              </div>
             </div>
           )}
         </div>
