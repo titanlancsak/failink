@@ -1,11 +1,12 @@
 'use client'
+import { Suspense } from 'react'
 import { useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '@/lib/api'
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [password, setPassword] = useState('')
@@ -51,5 +52,17 @@ export default function ResetPasswordPage() {
         </button>
       </form>
     </div>
+  )
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="animate-fade-up">
+        <Loader2 size={48} className="animate-spin text-steel-400 mx-auto mb-4" />
+      </div>
+    }>
+      <ResetPasswordContent />
+    </Suspense>
   )
 }

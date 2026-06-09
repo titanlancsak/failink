@@ -1,11 +1,12 @@
 'use client'
+import { Suspense } from 'react'
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Loader2, CheckCircle, XCircle } from 'lucide-react'
 import api from '@/lib/api'
 
-export default function VerifyPage() {
+function VerifyContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
@@ -42,5 +43,18 @@ export default function VerifyPage() {
         </>
       )}
     </div>
+  )
+}
+
+export default function VerifyPage() {
+  return (
+    <Suspense fallback={
+      <div className="animate-fade-up text-center">
+        <Loader2 size={48} className="animate-spin text-steel-400 mx-auto mb-4" />
+        <h1 className="font-display text-3xl mb-2">Loading...</h1>
+      </div>
+    }>
+      <VerifyContent />
+    </Suspense>
   )
 }
