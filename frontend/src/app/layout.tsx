@@ -17,7 +17,7 @@ const sourceSerif = Source_Serif_4({
 })
 
 export const metadata: Metadata = {
-  title: 'Agora — Share Your Thoughts',
+  title: 'Failink — Share Your Thoughts',
   description: 'A social space for meaningful conversations.',
 }
 

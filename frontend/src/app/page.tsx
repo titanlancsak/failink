@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getToken } from '@/lib/auth'
 
-const WORD = 'FAILLINK'
+const WORD = 'FAILINK'
 const LETTER_DELAY = 120
 const HOLD_DURATION = 800
 const FADE_DURATION = 600
